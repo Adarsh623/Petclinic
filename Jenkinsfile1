@@ -1,0 +1,43 @@
+
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk11'
+        maven 'maven'
+    }
+
+    stages {
+
+        stage('Git-Checkout') {
+            steps {
+                git branch: 'main',
+                    changelog: false,
+                    poll: false,
+                    url: 'https://github.com/Adarsh623/Petclinic.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+            stage('Sonar-Analysis') {
+    steps {
+        withSonarQubeEnv('SonarQube') {
+            sh '''
+                mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.11.0.3922:sonar \
+                -Dsonar.projectKey=Petclinic \
+                -Dsonar.projectName=Petclinic \
+                -Dsonar.java.binaries=target/classes \
+                -Dsonar.token=$SONAR_AUTH_TOKEN
+            '''
+        }
+    }
+}
+    }
+}
+
+
+//this was used when i learned simple ci/cd while learning sonarqube intergation with jenkins via github refer the above link from learning 
